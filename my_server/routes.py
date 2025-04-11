@@ -495,7 +495,7 @@ def onJoin(jsData):
     sids = list(socketio.server.manager.rooms.get(request.namespace, {}).get(room, set()))
 
     send_message_to_room({
-        'message': f'User {session['user']['username']} has joined room: {room}.',
+        'message': f"User {session['user']['username']} has joined room: {room}.",
         'room': room,
         'users': sids
     })
@@ -530,7 +530,7 @@ def onLeave(data):
     roomName = str(data['room'])
     leaveRoomInDict(roomName)
     send_message_to_room({
-        'message': f'User {session['user']['username']} has left room: {roomName}.',
+        'message': f"User {session['user']['username']} has left room: {roomName}.",
         'room': roomName
     })
 
@@ -641,7 +641,7 @@ def gameOver(data):
         emit("conclusionWin", "game over", to=userSid) #win
         emit("conclusionGameOver", "game over", to=opponentSid) #loss
 
-    games.pop(f'game_{jsData['gameId']}')
+    games.pop(f"game_{jsData['gameId']}")
 
     emit("SetGameOver", "game over", to=room)
 
