@@ -80,7 +80,7 @@ def method_name():
 def setPlayerSessions():
     roomGame = request.get_json()
     session['game'] = roomGame
-    session['gameNameKey'] = f'game_{roomGame['gameId']}'
+    session['gameNameKey'] = f"game_{roomGame['gameId']}"
 
     if session['game']['player1']['account']['id'] == session['user']['id']:
         session['playerUser'] = "player1"
