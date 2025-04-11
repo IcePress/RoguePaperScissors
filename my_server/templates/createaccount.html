@@ -1,0 +1,60 @@
+{% extends 'menubase.html' %}
+
+{% block accountContent %}
+<div class="mt-1 p-1 container">
+  <a href="{{ url_for('main_menu') }}" method="GET">
+    <section class="border fixed-top account_section">
+      Back to main menu
+    </section>
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  /* Ensure the parent container fills the viewport */
+  .full-height {
+    height: 50vh; /* Full viewport height */
+  }
+</style>
+
+  <div class="container-fluid d-flex align-items-center full-height">
+    <section class="border p-4 mx-auto">
+      <section class="border p-4 mx-auto">
+        <h2>
+          Create account
+        </h2>
+        <form action="{{ url_for('create_account') }}" method="POST">
+          <table>
+            <tr>
+                <td>Username:</td>
+                <td><input type="text" name="username"></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" name="password"></td>
+            </tr>
+            <tr>
+                <td>Repeat Password:</td>
+                <td><input type="password" name="password2"></td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="submit" value="Register"></td>
+            </tr>
+          </table>
+        </form>
+      </section>
+    </section>
+  </div>
+
+<section class="container-fluid d-flex align-items-center">
+  <a href="{{ url_for('login') }}" method="GET" class="border p-4 mx-auto">
+    Log in
+  </a>
+</section>
+    
+</div>
+
+
+{% endblock %}

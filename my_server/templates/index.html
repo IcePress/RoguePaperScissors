@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Forum
+{% endblock %}
+
+{% block headline %}
+    Välkommen till Forumet
+{% endblock %}
+
+
+{% block content %}
+
+<div class="mt-1 p-1 container">
+  <div class="bg-primary text-white rounded text-center">
+      <h1>Login</h1>
+  </div>
+  <nav class="navbar navbar-expand-sm bg-light">
+      <div class="container-fluid">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+              <a class="nav-link text-dark" href="{{url_for('main_menu')}}">Hem</a>
+          </li>
+          {% if 'logged_in' in session and session['logged_in'] == True %}
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="{{url_for('create_user')}}">Logga ut</a>
+            </li>
+            
+            {% else%}  
+          <li class="nav-item">
+              <a class="nav-link text-dark" href="{{url_for('login')}}">Logga in</a>
+              
+          </li>
+          {%endif%}
+          
+        </ul>
+      </div>
+  </nav>
+  <section>
+      {% with messages = get_flashed_messages(with_categories=True) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <strong>###</strong> {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+  </section>
+  <section class="border p-2 mt-4">
+  Here's the block
+  </section>
+</div>
+
+      <h2>
+        Logga in
+      </h2>
+    
+        <form action="{{ url_for('login') }}" method="POST">
+            <table>
+              <tr>
+                <td>Användarnamn:</td>
+                <td><input type="text" name="username"></td>
+              </tr>
+              <tr>
+                <td>Lösenord:</td>
+                <td><input type="password" name="password"></td>
+              </tr>
+              <tr>
+                <td colspan="2"><input type="submit" value="Logga in"></td>
+              </tr>
+            </table>
+          
+          
+        </form>
+    
+    
+</div>
+
+
+{% endblock %}

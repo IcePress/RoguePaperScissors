@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RoguePaperScissors</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- jQuery for Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap 4 JS -->
+    <script src="{{url_for('static', filename='socketScripts.js')}}"></script>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+    <script src="{{url_for('static', filename='gameScript.js')}}"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
+    <!-- Progress bar stuff -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+</head>
+<body>
+  
+  <div class="col align-items-center cardHand" ondrop="addCardBackToHand(event)" ondragover="allowDrop(event)" id="cardHand">
+    {% for card in session['game'][session['playerUser']]['fullInventory'] %}
+        
+        <!-- the card -->
+        <div class="card {{ card.cardClass }}Col" ondrop="event.preventDefault();" draggable="true" ondragstart="drag(event)" id="{{ card.id }}">
+
+            <!-- Card title -->
+            <h2 class="cardTitle {{ card.cardClass }}Col">{{ card.name }}</h2>
+
+            <!-- Card image cover -->
+            <div class="imageContainer">
+              <img class="{{ card.cardClass }}Col" id="cardIcon" src="{{ card.imgId }}" alt="{{ card.name }}" draggable="false">
+            </div>
+            
+            <!-- Card stats -->
+            <div class="row align-items-center stats">
+              <b class="statBorder col {{ card.cardClass }}Col">  
+                <h5>
+                  <img class="shieldSwordLogo" src="../static/images/sword.jpg">
+                  {{ card.ATK }} 
+                </h5>
+              </b>
+              <b class="statBorder col {{ card.cardClass }}Col">  
+                <h5>
+                  <img class="shieldSwordLogo" src="../static/images/shield.jpg"> 
+                  {{ card.DEF }} 
+                </h5>
+              </b>
+            </div>
+
+            <!-- Card class -->
+            <h6 class="cardClass {{ card.cardClass }}TextCol"> 
+              ({{ card.cardClass }})
+            <h6>
+
+            <!-- Card description -->
+            <h6 class="cardDesc"> {{ card.desc }}</h6>
+        </div>
+        <!-- end of card -->
+
+    {% endfor %}
+
+    <div class="col row innerCardHand">
+
+    </div>
+
+  </div>
+
+    <!-- Player 2 icon -->
+    <div class="container-fluid">
+        <section class="fixed-top playerIcon" id="player1Icon">
+            <section class="playerImage" id="{{session['playerOpponent']}}">
+              <h2 class="playerNameOffset">{{ session["game"][session['playerUser']]["name"] }}</h2>
+              <h5 class="playerNameOffset">Player 1</h4>
+            </section>
+            <button class="lockCardButton" id="socketTest">
+              Socket send
+            </button>
+            <button class="lockCardButton" id="socketTest">
+              Check socket room
+            </button>
+        </section>
+    </div>
+
+    <!-- Player 1 icon -->
+    <div class="container-fluid">
+      <section class="fixed-top playerIcon" id="player2Icon">
+          <section class="playerImage" id="player2Image">
+            <h2 class="playerNameOffset">{{ session["game"][session['playerOpponent']]["name"] }}</h2>
+            <h5 class="playerNameOffset">Player 2</h5>
+          </section>
+      </section>
+    </div>
+
+    <!-- HP -->
+    <div class="container-fluid" id="HPContainer">
+      
+      <!-- player 1 HP -->
+      <section class="HPBarOutline" id="player1HPBar" onclick="newDamage(session['playerUser'], 10)">
+        <div id="myBar{{ session['game'][session['playerUser']]['id'] }}" class="HPBar">25/25HP</div>
+      </section>
+      
+      
+
+      <section class="HPBarOutline" id="player2HPBar" onclick="newDamage(session['playerOpponent'], 10)">
+        <div id="myBar{{ session['game'][session['playerOpponent']]['id'] }}" class="HPBar">25/25HP</div>
+      </section>
+      <!-- player 2 HP -->
+      <!-- <section class="HPBar" id="player2HPBar">
+        
+
+      </section> -->
+    </div>
+
+    <!-- main textbox area -->
+      <div class="container-fluid align-items-center" id="mainTextboxArea">
+        <section class="fixed-top cardSocket row align-items-center" id="player1CardSocket" ondrop="addCardBackToSocket(event), setPlayerCard()" ondragover="allowDrop(event)">
+          <h2 class="cardSocketText">{{session['game'][session['playerUser']]['name']}}</h2>
+        </section>
+
+        <button class="lockCardButton" id="lockCardButton" disabled="true" onclick="lockCard()"> <!-- cardsFight() starts the fight-->
+          Lock card
+        </button>
+
+        <section class="fixed-top cardSocket row align-items-center" id="player2CardSocket">
+          <h2 class="cardSocketText">{{session['game'][session['playerOpponent']]['name']}}</h2>
+        </section>
+      </div>
+
+
+
+  <section>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>###</strong> {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </section>
+    
+</body>
+</html>

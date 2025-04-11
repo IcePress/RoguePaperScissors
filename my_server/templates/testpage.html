@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+</head>
+<body>
+
+    <div class="imageContainer">
+      <img class="imageCol cardIcon" src="static/images/paperIcon.PNG" draggable="false">
+    </div>
+    
+    <script>
+    </script>
+    
+</body>
+
+<style>
+  .imageContainer {
+    position: absolute;
+    /*object-fit: contain;*/
+    top: 39%;
+    left: 50%;
+    width: 24vh; /* Ensures a slight gap from card edges */
+    height: 24vh;
+    /*transform: translate(-50%, -50%);
+    display: flex; /* Ensures image is centered */
+    /*justify-content: center;
+    align-items: center;
+    overflow: hidden;*/
+  }
+  .cardIcon {
+    width: 100%; /* Makes sure image fits the container */
+    height: 50%; /* Maintains aspect ratio */
+    
+    border-radius: 0.75vh;
+  }
+</style>
+
+</html>

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RougePaperScissors</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" type="image/x-icon" href="../static/images/scissors.jpg">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- jQuery for Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap 4 JS -->
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="{{url_for('static', filename='socketScripts.js')}}"></script>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+    <script src="{{url_for('static', filename='gameScript.js')}}"></script>
+    <script src="{{url_for('static', filename='cardScripts.js')}}"></script>
+
+</head>
+
+<!--------------------------------------------THE MAIN MENU DIV--------------------------------------------->
+<div id="theMainMenuDiv">
+  <div class="mt-1 p-1 container" id="accountSquare">
+        {% if 'logged_in' in session and session['logged_in'] == True %}
+          {% if 'user' in session %}
+          <section class="border p-2 fixed-top account_section">
+            <section class="p-2">
+                <h3>
+                  {{ session['user']['username'] }}
+                </h3>
+            </section>
+            <div class="container-fluid d-flex full-height">
+                <section class="border p-4 mx-auto">
+                    <button onclick="logoutUser()" value="Log out">
+                        <h5>
+                            Log out
+                        </h5>
+                    </button>
+                </section>
+            </div>
+        </section>
+          {% endif %}
+        {% else %}
+        <section class="p-2 fixed-top account_section container-fluid full-height">
+          <section class="border p-4">
+            <h2>
+              Log in
+            </h2>
+          <table>
+            <tr>
+              <td>Username:</td>
+              <td><input type="text" id="formUsername"></td>
+            </tr>
+            <tr>
+              <td>Password:</td>
+              <td><input type="password" id="formPassword"></td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <button onclick="loginUser()" value="Log in">
+                  <h5>
+                    Log in
+                  </h5>
+                </button>
+              </td>
+            </tr>
+          </table>
+          <section class="container-fluid d-flex align-items-center">
+            <button onclick="createAccountSection()" class="border p-4 mx-auto">
+              <h5>
+                Register account
+              </h5>
+            </button>
+          </section>
+          </section>
+        </section>
+        {% endif %}
+  </div>
+
+  <!-- title logo -->
+  <img src="static/images/mainTitle.PNG" class="logoImage">
+
+  <div class="container" id="createdCodeSection">
+  </div>
+
+  <!-- Play buttons -->
+  <div class="container playButtonsContainer" style="background-color:lavender;" id="buttonsDiv">
+    <div class="container my-4">
+      <div class="row align-items-center">
+        <!-- First Button -->
+        <div class="col text-center">
+          <button class="btn btn-primary playButtons" id="btnCreateGame"> 
+            <h4>Play</h4>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<!--------------------------------------------THE INGAME DIV--------------------------------------------->
+<div id="theInGameDiv">
+  <div class="col align-items-center cardHand dropZone" ondrop="drop(event)" ondragover="allowDrop(event)" id="cardHand">
+
+    <div class="col row innerCardHand">
+
+    </div>
+
+  </div>
+    <!-- User icon -->
+    <div class="container-fluid">
+      <section class="fixed-top playerIcon" id="userIcon">
+        <section class="playerImage userImage">
+          <h2 class="playerNameOffset" id="userNameTitle"></h2>
+          <h5 class="playerNameOffset" id="userPlayerTitle"></h5>
+            <button class="lockCardButton" id="ToggleTest">
+              Get cards
+            </button>
+          <h4 class="playerNameOffset" id="userPlayerRoundWins"></h4>
+        </section>
+      </section>
+    </div>
+    <div id="rules">
+      <p id="instructionsRock"><b>
+        <img class="shieldSwordLogo" src="../static/images/fist.jpg"> Rock:</b>
+        <br>
+        Leftover <img class="shieldSwordLogo" src="../static/images/fist.jpg"></b> dealt as DMG<br>
+      </p>
+      <p id="instructionsPaper"><b>
+        <img class="shieldSwordLogo" src="../static/images/heart.jpg"> Paper:</b>
+        <br>
+        Recovers HP from DMG dealt<br>
+      </p>
+      <p id="instructionsScissors"> <b>
+        <img class="shieldSwordLogo" src="../static/images/scissors.jpg"> Scissors:</b>
+        <br>
+        Deals partial THORN DMG<br>
+      </p>
+    </div>
+    <style>
+      #instructionsRock{
+        color: rgb(0, 0, 0);
+      }
+    </style>
+
+    <!-- Opponent icon -->
+    <div class="container-fluid">
+      <section class="fixed-top playerIcon" id="opponentIcon">
+          <section class="playerImage opponentImage">
+            <h2 class="playerNameOffset" id="opponentNameTitle"></h2>
+            <h5 class="playerNameOffset" id="opponentPlayerTitle"></h5>
+            <h4 class="playerNameOffset" id="opponentPlayerRoundWins"></h4>
+          </section>
+      </section>
+    </div>
+
+    <!-- HP -->
+    <div class="container-fluid" id="HPContainer">
+
+      <!-- player 1 HP -->
+      <section class="HPBarOutline" id="userHPBarOutline">
+        <div id="userHPBar" class="HPBar">25/25 HP</div>
+      </section>
+      <div id="roundText">
+        <h3>
+          <b>
+            LEVEL:
+          </b>
+          <b id="levelInt">
+            0
+          </b>
+        </h3>
+        <h5>
+          <b>
+            ROUND:
+          </b>
+          <b id="roundInt">
+            0
+          </b>
+        </h5>
+      </div>
+      <!-- player 2 HP -->
+      <section class="HPBarOutline" id="opponentHPBarOutline">
+        <div id="opponentHPBar" class="HPBar">25/25 HP</div>
+      </section>
+
+    </div>
+
+  <div id="theInGameRoundDiv">
+    <!-- main textbox area -->
+    <div class="container-fluid align-items-center" id="mainTextboxArea">
+      <!-- Player 1 card socket -->
+      <div class="fixed-top cardSocketCss row align-items-center dropZone" id="userCardSocketCss" ondrop="addCardBackToSocket(event)" ondragover="allowDrop(event)">
+        <div class="cardSocket" id="userCardSocket">
+
+        </div>
+        <h2 class="cardSocketText" id="userCardSocketText"></h2>
+      </div>
+      <!-- Lock Card button -->
+      <button class="fixed-top lockCardButton row" id="userLockCardButton" disabled="true" onclick="lockCard()"> <!-- cardsFight() starts the fight-->
+        Lock
+      </button>
+      <!-- Player 2 card socket -->
+      <div class="fixed-top cardSocketCss row align-items-center" id="opponentCardSocketCss">
+        <div class="cardSocket" id="opponentCardSocket">
+
+        </div>
+        <h2 class="cardSocketText" id="opponentCardSocketText"></h2>
+      </div>
+      <!-- Lock Card button -->
+      <button class="fixed-top lockCardButton row" id="opponentLockCardButton" disabled="true"> <!-- cardsFight() starts the fight-->
+        Lock
+      </button>
+
+      <h4 id="waitingForOpponent">Waiting for opponent...</h4>
+    </div>
+  </div>
+
+  <!--------------------------------------------THE CHOOSECARD DIV--------------------------------------------->
+  <div id="theInGameChooseCardDiv">
+    <h4 class="text-align-center">Drag <b>ONE</b> new card to your hand</h4>
+    <div class="container-fluid align-items-center dropZone" id="pickCardHand" ondrop="drop(event)" ondragover="allowDrop(event)">
+
+    </div>
+  </div>
+
+  <!--------------------------------------------THE GAMEOVER DIV--------------------------------------------->
+  <div id="theGameOverDiv">
+    <h1 id="gameOverMessage">
+      Game over
+    </h1>
+    <!-- Second Button -->
+    <div class="col text-center">
+      <button class="btn btn-danger" id="btnGoBackToMenu" onclick="breakGame()">
+        Go back to main menu
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  #theInGameDiv{
+    display: none;
+  }
+  #theGameOverDiv{
+    display: none;
+    position: fixed;
+    top: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 99vh;
+    height: 52.5vh;
+
+    background-color: rgb(175, 45, 173);
+    border: 0.6vh solid rgb(123, 25, 99);
+    z-index: 10000;
+
+    /*display: flex;*/
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    
+    text-align: center;
+    justify-content: center; /* Centers vertically */
+  }
+  #btnGoBackToMenu{
+    position: fixed;
+    bottom: 10vh;
+    text-align: center;
+    justify-content: center; /* Centers vertically */
+    background-color: rgb(223, 47, 214);
+    border: 0.6vh solid rgb(138, 53, 142);
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    
+  }
+</style>
+<section class="flashMessages">
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>###</strong> {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</section>
+
+
+
+
+
+
+
+
+
+<!--------------------------------------------ALL THE MAIN MENU CSS STYLE--------------------------------------------->
+
+<style>
+  * {
+    user-select: none; /* Prevents selection on all elements */
+  }
+  #gameOverMessage{
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .account_section {
+    margin: 3vh;
+    padding: 1.5vh;
+    width: 50vh;
+    height: 40vh;
+  }
+  .cancelButton {
+    height: 20%;
+  }
+  
+  .logoImage {
+    margin-top: 5vh;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80vh;
+    height: 60vh;
+    
+  }
+  .playButtonsContainer {
+    position: relative;
+    
+  }
+  .playButtons {
+    width: 60%;
+    padding: 4.5vh;
+  }
+  #createdCodeSection{
+    margin-top: -4vh;
+    width: 62vw;
+    height: 7vh;
+    align-items: center; /* Centers vertically */
+  }
+  .createdElement {
+    height: 22vh;
+  }
+
+  #createdCodeSectionContent {
+    padding: 1.5vh;
+  }
+
+  #userGameCode {
+    justify-self: left;
+  }
+  #searchGameCode {
+    justify-self: right;
+  }
+  .cancelButton {
+    margin-left: auto;
+    margin-right: auto;
+    width: 30vh;
+    position: relative;
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--------------------------------------------ALL THE INGAME CSS STYLE--------------------------------------------->
+  <style>
+    #theInGameDiv{
+      opacity: 1;
+    }
+    body { 
+      background-color: whitesmoke;
+    }
+    .playerIcon {
+      position: absolute;
+      margin: 3vh;
+      padding: 1.2vh;
+      width: 37vh;
+      height: 23vh;
+      border: 0.3vh solid black;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      
+    }
+    #userIcon {
+      justify-self: left;
+    }
+    #rules{
+      position: absolute;
+      
+      top: 25vh;
+      margin: 3vh;
+      padding: 1vh;
+      width: 37vh;
+      height: 26vh;
+      border: 0.3vh solid rgb(137, 68, 68);
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+    }
+    #instructionsRock{
+      padding: 0vh;
+      margin: 0.3vh;
+    }
+    #instructionsPaper{
+      padding: 0vh;
+      margin: 0.3vh;
+    }
+    #instructionsScissors{
+      padding: 0vh;
+      margin: 0.3vh;
+    }
+    #opponentIcon {
+      justify-self: right;
+    }
+    .playerImage {
+      padding: 0vh;
+      background-size: 34vh 27vh;
+      position: absolute;
+      width: 34vh;
+      height: 20vh;
+    }
+    .userImage{
+      background-color: rgb(103, 204, 255);
+    }
+    .opponentImage{
+      background-color: rgb(255, 132, 118);
+    }
+    .playerNameOffset {
+      padding: 0vh 0.75vh;
+    }
+    #mainTextboxArea {
+      position: fixed;
+      top: 9vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60vw;
+      height: 45vh;
+      background-color: gainsboro;
+      justify-content: center; /* Centers horizontally */
+      z-index: -7;
+    }
+    #HPContainer {
+      position: fixed;
+      top: 2vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 62vw;
+      height: 7vh;
+      background-color: rgb(169, 165, 165);
+      
+      display: flex;
+      align-items: center; /* Centers vertically */
+    }
+    .HPBarOutline{
+      position: absolute;
+      top: 1vh;
+      width: 20vw;
+      height: 5vh;
+      background-color: rgb(126, 22, 22);
+    }
+    .HPBar{
+      position: absolute;
+      width: 100%;
+      height: 5vh;
+      background-color: rgb(0, 255, 13);
+      border: 0.6vh solid rgb(74, 89, 74);
+      max-width: 20vw;
+    }
+    #userHPBarOutline{
+      justify-self: left;
+      left: 1.5vh;
+    }
+    #opponentHPBarOutline{
+      justify-self: right;
+      right: 1.5vh;
+    }
+    #roundText{
+      position: absolute;
+      width: 30vh;
+      height: 11vh;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgb(0, 239, 195);
+      border: 0.6vh solid rgb(0, 143, 146);
+      text-align: center;
+      justify-content: center; /* Centers vertically */
+      top: -1.5vh;
+    }
+    #waitingForOpponent{
+      display: none;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 3vh;
+      opacity: 0.5;
+      justify-content: center; /* Centers vertically */
+    }
+
+    /* ---------------- CARD STUFF ------------------ */
+    .cardHand{
+      position: fixed;
+      bottom: 1vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: auto;
+      min-width: 60vh;
+      height: 43.5vh;
+      background-color: rgb(192, 192, 192);
+      border: 0.6vh solid rgb(111, 111, 111);
+      padding: 2.2vh; /* Reduce space inside */
+
+      display: flex;
+      justify-content: center; /* Centers horizontally */
+      align-items: center; /* Centers vertically */
+      z-index: 8000;
+    }
+    #theInGameChooseCardDiv{
+      position: fixed;
+      top: 5vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 99vh;
+      height: 50vh;
+
+      background-color: rgb(255, 159, 159);
+      border: 0.6vh solid rgb(120, 4, 4);
+      z-index: 7000;
+
+      /*display: flex;*/
+      justify-content: center; /* Centers horizontally */
+      align-items: center; /* Centers vertically */
+      
+      text-align: center;
+      justify-content: center; /* Centers vertically */
+    }
+    #pickCardHand{
+      position: relative;
+      width: 96vh;
+      height: 43vh;
+
+      background-color: rgb(241, 121, 121);
+      border: 0.3vh solid rgb(120, 4, 4);
+      z-index: 7000;
+
+      display: flex;
+      overflow: auto;
+      justify-content: center; /* Centers horizontally */
+      align-items: center; /* Centers vertically */
+      flex-wrap: wrap; /* Allows cards to wrap to new lines if needed */
+    }
+    .cardTitle{
+      height: 7.5vh;
+      position: relative;
+      z-index: 7;
+      border-radius: 2.2vh;
+      text-align: center;
+    }
+    .cardTitleText{
+      z-index: 7;
+    }
+    .card {
+      position: relative; /* Makes sure the image is positioned within the card */
+      width: 27.5vh;
+      height: 42vh;
+      border-radius: 1.5vh;
+      padding: 0.75vh;
+      text-align: center;
+      margin-left: 0.3vh;
+      margin-right: 0.3vh;
+      z-index: 9999;
+      overflow: hidden; /* Ensures no part of the image overflows */
+    }
+    .rockCol{
+      background-color: rgb(139, 91, 216);
+      border: 0.6vh solid rgb(43, 28, 67);
+    }
+    .rockTextCol{
+      color: rgb(43, 28, 67);
+      z-index: 15;
+    }
+    .paperCol{
+      background-color: rgb(128, 215, 237);
+      border: 0.6vh solid rgb(55, 93, 102);
+    }
+    .paperTextCol{
+      color: rgb(55, 93, 102);
+      z-index: 15;
+    }
+    .scissorsCol{
+      background-color: rgb(216, 106, 172);
+      border: 0.6vh solid rgb(84, 41, 67);
+    }
+    .scissorsTextCol{
+      color: rgb(84, 41, 67);
+      z-index: 15;
+    }
+    .stats{
+      position: relative;
+      height: 7.5vh;
+      top: 35%;
+      margin: -0.75vh;
+    }
+    .shieldSwordLogo{
+      height: 3.4vh;
+      width: 3.4vh;
+    }
+    .statBorder{
+      width: 52.5vh;
+      height: 5.25vh;
+      border-radius: 2.25vh;
+      overflow: hidden;
+    }
+    /* here is the CSS details for the image on the card */
+    .imageContainer {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      width: 24vh; /* Ensures a slight gap from card edges */
+      height: 24vh;
+      transform: translate(-50%, -50%);
+      /*display: flex; /* Ensures image is centered */
+      /*justify-content: center;
+      align-items: center;
+      overflow: hidden;*/
+    }
+    .cardIcon {
+      width: 100%; /* Makes sure image fits the container */
+      height: 70%; /* Maintains aspect ratio */
+      border-radius: 0.75vh;
+    }
+    .cardClass{
+      position: relative;
+      top: 34%;
+      z-index: 15;
+    }
+    .cardDesc{
+      position: relative;
+      top: 35%;
+      z-index: 15;
+    }
+    .cardSocketCss{
+      justify-content: center; /* Centers vertically */
+      width: 28.7vh;
+      height: 43.2vh;
+      margin: 1.0vh;
+    }
+    #userCardSocketCss{
+      border: 0.6vh solid rgb(103, 204, 255);
+      justify-self: left;
+    }
+    #opponentCardSocketCss{
+      border: 0.6vh solid rgb(255, 132, 118);
+      justify-self: right;
+    }
+    #userCardSocket {
+      justify-self: left;
+    }
+    #opponentCardSocket {
+      justify-self: right;
+    }
+    #userCardSocketText{
+      color: rgb(103, 204, 255);
+      position: absolute;
+      display: flex; /* Ensures image is centered */
+    }
+    #opponentCardSocketText{
+      color: rgb(255, 132, 118);
+      position: absolute;
+      display: flex; /* Ensures image is centered */
+    }
+    #userLockCardButton{
+      justify-self: left;
+      left: 30vh;
+      padding: 0.75vh;
+      margin: 3vh;
+    }
+    #opponentLockCardButton{
+      justify-self: right;
+      right: 30vh;
+      padding: 0.75;
+      margin: 3vh;
+    }
+  </style>
+
+
+<script>
+  enterGameUrl = "{{ url_for('enterGame') }}";
+</script>

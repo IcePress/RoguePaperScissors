@@ -1,0 +1,30 @@
+{% extends 'menubase.html' %}
+
+{% block accountContent %}
+<div class="mt-1 p-1 container">
+    <a href="{{ url_for('main_menu') }}" method="GET">
+      <section class="border fixed-top account_section">
+        Back to main menu
+      </section>
+    </a>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  /* Ensure the parent container fills the viewport */
+  .full-height {
+    height: 50vh; /* Full viewport height */
+  }
+</style>
+
+    <div class="container-fluid d-flex align-items-center full-height">
+        <section class="border p-4 mx-auto">
+            <form action="{{ url_for('logout') }}" method="POST">
+                <td colspan="2"><input type="submit" value="Logga ut"></td>
+            </form>
+        </section>
+    </div>
+
+{% endblock %}

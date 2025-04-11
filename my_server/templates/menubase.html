@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> <!-- jQuery for Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap 4 JS -->
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="{{url_for('static', filename='socketScripts.js')}}"></script>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+    <script src="{{url_for('static', filename='gameScript.js')}}"></script>
+
+</head>
+<body>
+  
+  {% block accountContent %}{% endblock %}
+
+  
+  <style>
+    .account_section {
+        margin: 20px;
+        padding: 10px;
+        width: 250px;
+        height: 200px;
+    }
+  </style>
+
+  {% block content %}{% endblock %}
+
+  <section class="flashMessages">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>###</strong> {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </section>
+
+
+</body>
+</html>
+
+<style>
+  .flashMessages {
+    position: sticky;
+    background-color: bisque;
+  }
+</style>
